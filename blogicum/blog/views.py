@@ -78,30 +78,24 @@ class AddCommentView(LoginRequiredMixin, CreateView):
         return redirect('blog:post_detail', pk=self.kwargs['pk'])
 
 
-class UserProfileView(DetailView):
-    model = User
+class UserProfileView(ListView):
+    model = Post
     template_name = 'blog/profile.html'
-    slug_url_kwarg = "username"
-    slug_field = "username"
-    context_object_name = 'user'
+    context_object_name = 'posts'
     paginate_by = 10
+
+    def get_queryset(self):
+        user = get_object_or_404(User, username=self.kwargs.get('username'))
+        return user.posts.all().annotate(comment_count=Count('comments')).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = self.object.posts.all().annotate(comment_count=Count('comments')).order_by('-pub_date')
-        paginator = Paginator(posts, self.paginate_by)
-        page_number = self.request.GET.get('page')
-        try:
-            page_obj = paginator.page(page_number)
-        except PageNotAnInteger:
-            page_obj = paginator.page(1)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
-        context['page_obj'] = page_obj
-        context['profile'] = self.object
-        if self.request.user.is_authenticated and self.request.user == self.object:
+        user = get_object_or_404(User, username=self.kwargs.get('username'))
+        context['profile'] = user
+        context['username'] = user.username
+        if self.request.user.is_authenticated and self.request.user == user:
             context['can_edit'] = True
-            context['change_password_url'] = 'password_change'  # URL для изменения пароля
+            context['change_password_url'] = 'password_change'
         return context
 
 
