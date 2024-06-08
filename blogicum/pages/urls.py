@@ -1,4 +1,3 @@
-from django.conf.urls import handler404, handler500, handler403, handler400
 from django.urls import path
 
 from pages import views
