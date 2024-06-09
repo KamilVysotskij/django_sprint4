@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from blog.models import Category, Location, Post
+from blog.models import Category, Comment, Location, Post
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -22,7 +22,7 @@ class CategoryAdmin(admin.ModelAdmin):
     )
     list_filter = ('title',)
     list_display_links = ('title',)
-    ordering = ['slug']
+    ordering = ('slug',)
 
 
 class LocationAdmin(admin.ModelAdmin):
@@ -40,7 +40,7 @@ class LocationAdmin(admin.ModelAdmin):
         'name',
     )
     list_display_links = ('id',)
-    ordering = ['id']
+    ordering = ('id',)
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -68,9 +68,32 @@ class PostAdmin(admin.ModelAdmin):
         'is_published'
     )
     list_display_links = ('title',)
-    ordering = ['author__first_name']
+    ordering = ('author__first_name',)
+
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'text',
+        'author',
+        'post',
+    )
+    list_editable = (
+        'text',
+    )
+    search_fields = (
+        'author',
+        'text',
+    )
+    list_filter = (
+        'author',
+        'text',
+    )
+    list_display_links = ('id',)
+    ordering = ('author__first_name',)
 
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(Post, PostAdmin)
+admin.site.register(Comment, CommentAdmin)

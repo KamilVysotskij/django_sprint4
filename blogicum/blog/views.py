@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -38,12 +39,18 @@ class EditCommentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return comment.author == self.request.user
 
     def get_object(self):
-        post_pk = self.kwargs['pk']
+        post_pk = self.kwargs.get('pk')
         post = get_object_or_404(Post, pk=post_pk)
-        comment = get_object_or_404(Comment, pk=self.kwargs['comment_pk'])
+        comment = get_object_or_404(Comment, pk=self.kwargs.get('comment_pk'))
         if comment.post_id != post.pk:
             raise Http404()
         return comment
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['edit_comment_mode'] = True
+    #     context['delete_comment_mode'] = False
+    #     return context
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -59,12 +66,18 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
                             kwargs={'pk': self.object.post.pk})
 
     def get_object(self):
-        post_pk = self.kwargs['pk']
+        post_pk = self.kwargs.get('pk')
         post = get_object_or_404(Post, pk=post_pk)
-        comment = get_object_or_404(Comment, pk=self.kwargs['comment_pk'])
+        comment = get_object_or_404(Comment, pk=self.kwargs.get('comment_pk'))
         if comment.post_id != post.pk:
             raise Http404()
         return comment
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['delete_comment_mode'] = True
+    #     context['edit_comment_mode'] = False
+    #     return context
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):
@@ -73,21 +86,21 @@ class AddCommentView(LoginRequiredMixin, CreateView):
     template_name = 'blog/add_comment.html'
 
     def form_valid(self, form):
-        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        post = get_object_or_404(Post, pk=self.kwargs.get('pk'))
 
         comment = form.save(commit=False)
         comment.author = self.request.user
         comment.post = post
         comment.save()
 
-        return redirect('blog:post_detail', pk=self.kwargs['pk'])
+        return redirect('blog:post_detail', pk=self.kwargs.get('pk'))
 
 
 class UserProfileView(ListView):
     model = Post
     template_name = 'blog/profile.html'
     context_object_name = 'posts'
-    paginate_by = 10
+    paginate_by = settings.PAGINATE_BY
 
     def get_queryset(self):
         user = get_object_or_404(User, username=self.kwargs.get('username'))
@@ -111,8 +124,8 @@ class UserProfileUpdateView(LoginRequiredMixin,
     model = User
     template_name = 'blog/user.html'
     fields = ['first_name', 'last_name', 'username', 'email']
-    slug_url_kwarg = "username"
-    slug_field = "username"
+    slug_url_kwarg = 'username'
+    slug_field = 'username'
     context_object_name = 'user'
 
     def test_func(self):
@@ -143,6 +156,12 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('blog:profile',
                        kwargs={'username': self.request.user.username})
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['edit_post_mode'] = False
+    #     context['delete_post_mode'] = False
+    #     return context
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -158,7 +177,13 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == post.author
 
     def handle_no_permission(self):
-        return redirect('blog:post_detail', pk=self.kwargs['pk'])
+        return redirect('blog:post_detail', pk=self.kwargs.get('pk'))
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['edit_post_mode'] = True
+    #     context['delete_post_mode'] = False
+    #     return context
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -173,6 +198,8 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['object'] = self.get_object()
+        # context['delete_post_mode'] = True
+        # context['edit_post_mode'] = False
         return context
 
 
@@ -180,7 +207,7 @@ class PostListView(ListView):
     model = Post
     template_name = 'blog/index.html'
     context_object_name = 'post_list'
-    paginate_by = 10
+    paginate_by = settings.PAGINATE_BY
 
     def get_queryset(self):
         queryset = Post.published_objects.all().annotate(
@@ -198,6 +225,8 @@ class PostDetailView(DetailView):
         context['comments'] = (
             self.object.comments.select_related('author')
         )
+        # context['delete_post_mode'] = False
+        # context['edit_post_mode'] = False
         return context
 
     def get(self, request, *args, **kwargs):
@@ -216,10 +245,10 @@ class PostDetailView(DetailView):
 class CategoryPostsView(ListView):
     template_name = 'blog/category.html'
     context_object_name = 'post_list'
-    paginate_by = 10
+    paginate_by = settings.PAGINATE_BY
 
     def get_queryset(self):
-        category_slug = self.kwargs['category_slug']
+        category_slug = self.kwargs.get('category_slug')
         category = get_object_or_404(Category,
                                      slug=category_slug,
                                      is_published=True)
@@ -227,7 +256,7 @@ class CategoryPostsView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        category_slug = self.kwargs['category_slug']
+        category_slug = self.kwargs.get('category_slug')
         context['category'] = get_object_or_404(Category,
                                                 slug=category_slug,
                                                 is_published=True)

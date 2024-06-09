@@ -54,9 +54,12 @@ class Post(BaseModel):
     title = models.CharField(
         verbose_name='Заголовок',
         max_length=256)
-    image = models.ImageField('Фото', upload_to='posts_images', blank=True)
+    image = models.ImageField(
+        verbose_name='Фото',
+        upload_to='posts_images',
+        blank=True)
     text = models.TextField(
-        verbose_name='Текст')
+        verbose_name='Текст',)
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
         help_text=('Если установить дату и время в будущем '
@@ -89,12 +92,21 @@ class Post(BaseModel):
 
 
 class Comment(models.Model):
-    text = models.TextField('Текст комментария')
-    post = models.ForeignKey(Post,
-                             on_delete=models.CASCADE,
-                             related_name='comments')
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField(
+        verbose_name='Текст комментария',)
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments')
+    created_at = models.DateTimeField(
+        verbose_name='Добавлено',
+        auto_now_add=True)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор публикации')
 
     class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
