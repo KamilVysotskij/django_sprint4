@@ -46,11 +46,10 @@ class EditCommentView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             raise Http404()
         return comment
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['edit_comment_mode'] = True
-    #     context['delete_comment_mode'] = False
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['edit_comment_mode'] = True
+        return context
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -73,11 +72,10 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             raise Http404()
         return comment
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['delete_comment_mode'] = True
-    #     context['edit_comment_mode'] = False
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['delete_comment_mode'] = True
+        return context
 
 
 class AddCommentView(LoginRequiredMixin, CreateView):
@@ -157,12 +155,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return reverse('blog:profile',
                        kwargs={'username': self.request.user.username})
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['edit_post_mode'] = False
-    #     context['delete_post_mode'] = False
-    #     return context
-
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -179,11 +171,10 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def handle_no_permission(self):
         return redirect('blog:post_detail', pk=self.kwargs.get('pk'))
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['edit_post_mode'] = True
-    #     context['delete_post_mode'] = False
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['edit_post_mode'] = True
+        return context
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -198,8 +189,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['object'] = self.get_object()
-        # context['delete_post_mode'] = True
-        # context['edit_post_mode'] = False
+        context['delete_post_mode'] = True
         return context
 
 
@@ -225,8 +215,6 @@ class PostDetailView(DetailView):
         context['comments'] = (
             self.object.comments.select_related('author')
         )
-        # context['delete_post_mode'] = False
-        # context['edit_post_mode'] = False
         return context
 
     def get(self, request, *args, **kwargs):
