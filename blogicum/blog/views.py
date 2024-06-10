@@ -121,7 +121,7 @@ class UserProfileUpdateView(LoginRequiredMixin,
                             UpdateView):
     model = User
     template_name = 'blog/user.html'
-    fields = ['first_name', 'last_name', 'username', 'email']
+    fields = ('first_name', 'last_name', 'username', 'email')
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'user'
